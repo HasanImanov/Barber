@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bərbər rezervi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDF2F4; --surface:#FFFFFF; --sunk:#E3EAED; --ink:#13233B; --muted:#586A80; --line:#D3DDE3;
+  --blue:#0E7C9E; --on-blue:#FFFFFF; --blue-soft:#DCEFF5; --red:#C8372D; --red-soft:#FBE6E3;
+  --brass:#946A1E; --ok:#1B7F54; --ok-soft:#DDF2E8; --pole-w:#FFFFFF; --pole-b:#1C4E8A;
+  --display:"Oswald","Arial Narrow",Impact,sans-serif;
+  --body:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D1826; --surface:#152437; --sunk:#0A131F; --ink:#EAF1F5; --muted:#9BAEC2; --line:#27394F;
+    --blue:#45B7D8; --on-blue:#06202B; --blue-soft:#12384A; --red:#EC6F63; --red-soft:#3D1D1C;
+    --brass:#E0B15C; --ok:#55C596; --ok-soft:#123528; --pole-w:#EAF1F5; --pole-b:#2F6DB5;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D1826; --surface:#152437; --sunk:#0A131F; --ink:#EAF1F5; --muted:#9BAEC2; --line:#27394F;
+  --blue:#45B7D8; --on-blue:#06202B; --blue-soft:#12384A; --red:#EC6F63; --red-soft:#3D1D1C;
+  --brass:#E0B15C; --ok:#55C596; --ok-soft:#123528; --pole-w:#EAF1F5; --pole-b:#2F6DB5;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+h1,h2,h3,p{margin:0}
+
+/* Bərbər dirəyi */
+.pole{height:12px;background:repeating-linear-gradient(135deg,var(--red) 0 14px,var(--pole-w) 14px 28px,var(--pole-b) 28px 42px,var(--pole-w) 42px 56px);background-size:79.196px 100%;animation:pole 5s linear infinite}
+@keyframes pole{to{background-position-x:79.196px}}
+@media (prefers-reduced-motion:reduce){.pole{animation:none}}
+
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px 64px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 0}
+.brand{font-family:var(--display);font-weight:600;font-size:20px;letter-spacing:.01em}
+.brand small{display:block;font-family:var(--body);font-weight:500;font-size:13px;color:var(--muted);letter-spacing:0}
+
+.btn{border:0;border-radius:10px;background:var(--blue);color:var(--on-blue);font-weight:600;padding:12px 18px;min-height:46px;line-height:1.2}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+.btn.sm{padding:8px 12px;min-height:38px;font-size:14px;border-radius:8px}
+.btn.danger{background:transparent;color:var(--red);box-shadow:inset 0 0 0 1.5px var(--red)}
+.btn.danger.sure{background:var(--red);color:#fff}
+.btn.block{width:100%}
+
+.field{display:block;margin-bottom:14px}
+.field span{display:block;font-size:14px;font-weight:600;margin-bottom:6px}
+.inp{width:100%;border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:11px 12px;min-height:46px}
+.inp:focus{outline:none;border-color:var(--blue)}
+.inp.sm{min-height:38px;padding:7px 10px;font-size:14px;border-radius:8px}
+.err{color:var(--red);font-size:14px;font-weight:500;margin:0 0 12px}
+.note{color:var(--muted);font-size:14px}
+
+/* Müştəri səhifəsi */
+.hero{padding:28px 0 32px}
+.hero h1{font-family:var(--display);font-weight:600;font-size:clamp(44px,9vw,84px);line-height:1;letter-spacing:-.01em;text-wrap:balance}
+.hero p{margin-top:14px;font-size:18px;color:var(--muted);max-width:34ch}
+.book{display:grid;gap:28px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:880px){.book{grid-template-columns:minmax(0,1fr) 320px;align-items:start}.book .ticket{position:sticky;top:20px}}
+.step{padding:22px 0;border-top:1.5px solid var(--line)}
+.step h2{font-family:var(--display);font-weight:500;font-size:24px;display:flex;align-items:baseline;gap:12px;margin-bottom:14px}
+.step h2 .n{font-size:15px;color:var(--on-blue);background:var(--blue);min-width:26px;height:26px;border-radius:50%;display:inline-grid;place-items:center;font-family:var(--body);font-weight:700;transform:translateY(-3px)}
+.opts{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.opt{text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:12px;display:flex;align-items:center;gap:12px;min-height:60px}
+.opt[aria-pressed="true"]{border-color:var(--blue);background:var(--blue-soft);box-shadow:inset 0 0 0 1px var(--blue)}
+.ava{flex:none;width:38px;height:38px;border-radius:9px;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-family:var(--display);font-size:16px}
+.opt b{font-weight:600}
+.svc{display:grid;gap:8px}
+.svc .opt{justify-content:space-between}
+.svc .opt i{font-style:normal;color:var(--muted);font-size:14px;display:block}
+.price{font-family:var(--display);font-size:20px;font-weight:500;white-space:nowrap;font-variant-numeric:tabular-nums}
+.days{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;margin:0 -2px}
+.day{flex:none;width:66px;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:8px 0;text-align:center}
+.day i{font-style:normal;display:block;font-size:13px;color:var(--muted)}
+.day b{display:block;font-family:var(--display);font-weight:500;font-size:24px;line-height:1.15}
+.day[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.day[aria-pressed="true"] i{color:inherit;opacity:.75}
+.slots{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(76px,1fr))}
+.slot{border:1.5px solid var(--line);background:var(--surface);border-radius:8px;padding:10px 0;font-weight:600;font-variant-numeric:tabular-nums}
+.slot:disabled{background:transparent;color:var(--muted);text-decoration:line-through;opacity:.55;cursor:not-allowed}
+.slot[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:var(--on-blue)}
+.two{display:grid;gap:0 14px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+
+/* Talon */
+.ticket{background:var(--surface);border-radius:6px;padding:22px 22px 20px;position:relative;box-shadow:0 1px 0 var(--line),0 14px 30px -18px rgba(19,35,59,.45)}
+.ticket h3{font-family:var(--display);font-weight:500;font-size:20px;margin-bottom:10px}
+.ticket dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:15px}
+.ticket dt{color:var(--muted)}
+.ticket dd{margin:0;text-align:right;font-weight:600}
+.tear{border-top:2px dashed var(--line);margin:18px -22px;position:relative}
+.tear::before,.tear::after{content:"";position:absolute;top:-10px;width:18px;height:18px;border-radius:50%;background:var(--bg)}
+.tear::before{left:-9px}.tear::after{right:-9px}
+.total{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
+.total .price{font-size:30px;color:var(--brass)}
+.done{max-width:440px;margin:24px auto 0}
+.done .big{font-family:var(--display);font-weight:600;font-size:40px;line-height:1.05;margin-bottom:6px}
+.done .when{font-family:var(--display);font-size:54px;font-weight:500;line-height:1;color:var(--blue);margin:14px 0 4px;font-variant-numeric:tabular-nums}
+
+/* Giriş və quraşdırma */
+.card{background:var(--surface);border-radius:14px;padding:24px;max-width:440px;margin:24px auto 0;box-shadow:0 1px 0 var(--line)}
+.card h2{font-family:var(--display);font-weight:500;font-size:30px;line-height:1.1;margin-bottom:6px}
+.card>p{color:var(--muted);margin-bottom:18px}
+.who{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.who .opt{min-height:0;padding:8px 12px 8px 8px}
+.who .ava{width:30px;height:30px;font-size:13px;border-radius:7px}
+
+/* Panel */
+.tabs{display:flex;gap:4px;background:var(--sunk);padding:4px;border-radius:12px;margin-bottom:22px}
+.tab{flex:1;border:0;background:transparent;border-radius:9px;padding:10px 8px;font-weight:600;color:var(--muted);position:relative}
+.tab[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(19,35,59,.14)}
+.dot{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--red);color:#fff;font-size:12px;font-weight:700;margin-left:6px}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.nav{display:flex;align-items:center;gap:6px}
+.nav .btn{min-width:38px;padding:8px}
+.nav h2{font-family:var(--display);font-weight:500;font-size:26px;line-height:1.1;margin:0 8px}
+.nav h2 small{display:block;font-family:var(--body);font-size:13px;font-weight:500;color:var(--muted)}
+.fresh{background:var(--blue-soft);border-left:4px solid var(--blue);border-radius:4px 12px 12px 4px;padding:14px 16px;margin-bottom:18px}
+.fresh h3{font-size:16px;font-weight:700;margin-bottom:6px}
+.fresh ul{margin:0 0 12px;padding:0;list-style:none;font-size:15px}
+.fresh li{padding:3px 0}
+.appt{display:grid;grid-template-columns:76px minmax(0,1fr);gap:4px 14px;background:var(--surface);border-radius:12px;padding:16px;margin-bottom:10px;box-shadow:0 1px 0 var(--line)}
+.appt .t{font-family:var(--display);font-size:28px;font-weight:500;line-height:1;font-variant-numeric:tabular-nums}
+.appt .t small{display:block;font-family:var(--body);font-size:12px;color:var(--muted);font-weight:500;margin-top:5px}
+.appt .who-n{font-weight:600;font-size:17px;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.appt .meta{color:var(--muted);font-size:14px}
+.appt .acts{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
+.appt.off{opacity:.62}
+.chip{font-size:12px;font-weight:700;border-radius:6px;padding:3px 8px;background:var(--sunk);color:var(--muted)}
+.chip.done{background:var(--ok-soft);color:var(--ok)}
+.chip.noshow,.chip.cancelled{background:var(--red-soft);color:var(--red)}
+.paid{font-family:var(--display);font-size:22px;color:var(--brass);font-weight:500;margin-right:4px}
+.pay{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pay .inp{width:120px}
+.empty{border:1.5px dashed var(--line);border-radius:12px;padding:28px 20px;text-align:center;color:var(--muted)}
+.panel-box{background:var(--surface);border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:0 1px 0 var(--line)}
+.panel-box h3{font-family:var(--display);font-weight:500;font-size:22px;margin-bottom:12px}
+
+/* Hesabat */
+.earn{font-family:var(--display);font-weight:600;font-size:clamp(52px,12vw,88px);line-height:1;color:var(--brass);font-variant-numeric:tabular-nums}
+.facts{display:flex;flex-wrap:wrap;gap:10px 32px;margin:14px 0 4px;padding:0;list-style:none}
+.facts li{font-size:15px;color:var(--muted)}
+.facts b{display:block;font-family:var(--display);font-weight:500;font-size:26px;color:var(--ink);line-height:1.15}
+.chart{display:flex;align-items:flex-end;gap:3px;height:140px;margin-top:8px;border-bottom:1.5px solid var(--line)}
+.chart div{flex:1;background:var(--blue);border-radius:3px 3px 0 0;min-width:0}
+.chart div.z{background:var(--line);height:2px!important}
+.chart div.today{background:var(--brass)}
+.axis{display:flex;gap:3px;font-size:11px;color:var(--muted);margin-top:4px}
+.axis span{flex:1;text-align:center;min-width:0;overflow:visible;white-space:nowrap}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line)}
+th{font-size:13px;color:var(--muted);font-weight:600}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+.seg{display:inline-flex;background:var(--sunk);padding:3px;border-radius:9px}
+.seg button{border:0;background:transparent;border-radius:7px;padding:6px 12px;font-size:14px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink)}
+.row{display:grid;gap:8px;grid-template-columns:minmax(0,1fr) 78px 84px auto;align-items:center;margin-bottom:8px}
+.row.head{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:4px}
+.staff{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}
+.staff b{flex:1 1 140px;font-weight:600}
+.staff .inp{width:140px}
+
+#toast{position:fixed;left:50%;bottom:0;transform:translate(-50%,120%);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:10px;font-weight:500;font-size:15px;max-width:calc(100% - 32px);transition:transform .25s;margin-bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:9;text-align:center}
+#toast.on{transform:translate(-50%,0)}
+.loading{padding:80px 0;text-align:center;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="pole" aria-hidden="true"></div>
+<div class="wrap" id="app"><p class="loading">Yüklənir…</p></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* ============================================================
+   FIREBASE QOŞULMASI
+   Firebase konsolundan (Project settings > Your apps > Web app)
+   götürdüyün konfiqurasiyanı null əvəzinə bura yapışdır:
+
+   var FIREBASE_CONFIG = {
+     apiKey: "...",
+     authDomain: "...",
+     projectId: "...",
+     storageBucket: "...",
+     messagingSenderId: "...",
+     appId: "..."
+   };
+
+   null qalsa, məlumat yalnız bu brauzerdə (localStorage) saxlanır.
+   ============================================================ */
+var FIREBASE_CONFIG = null;
+
+/*SHA-START*/
+function sha256(str){
+  var K=[],H=[],c=0,n,i,j;
+  function isP(x){for(var f=2;f*f<=x;f++)if(x%f===0)return false;return true}
+  function frac(x){return ((x-Math.floor(x))*4294967296)|0}
+  for(n=2;c<64;n++)if(isP(n)){if(c<8)H[c]=frac(Math.pow(n,1/2));K[c++]=frac(Math.pow(n,1/3))}
+  var b=new TextEncoder().encode(str),l=b.length,nb=((l+8)>>6)+1,w=new Int32Array(nb*16);
+  for(i=0;i<l;i++)w[i>>2]|=b[i]<<(24-(i%4)*8);
+  w[l>>2]|=0x80<<(24-(l%4)*8);w[nb*16-1]=l*8;
+  function r(x,s){return (x>>>s)|(x<<(32-s))}
+  var h=H.slice();
+  for(i=0;i<nb;i++){
+    var m=new Int32Array(64);
+    for(j=0;j<16;j++)m[j]=w[i*16+j];
+    for(j=16;j<64;j++){var x=m[j-15],y=m[j-2];m[j]=(m[j-16]+(r(x,7)^r(x,18)^(x>>>3))+m[j-7]+(r(y,17)^r(y,19)^(y>>>10)))|0}
+    var a=h[0],bb=h[1],cc=h[2],d=h[3],e=h[4],f=h[5],g=h[6],hh=h[7];
+    for(j=0;j<64;j++){
+      var t1=(hh+(r(e,6)^r(e,11)^r(e,25))+((e&f)^(~e&g))+K[j]+m[j])|0;
+      var t2=((r(a,2)^r(a,13)^r(a,22))+((a&bb)^(a&cc)^(bb&cc)))|0;
+      hh=g;g=f;f=e;e=(d+t1)|0;d=cc;cc=bb;bb=a;a=(t1+t2)|0;
+    }
+    h[0]=(h[0]+a)|0;h[1]=(h[1]+bb)|0;h[2]=(h[2]+cc)|0;h[3]=(h[3]+d)|0;h[4]=(h[4]+e)|0;h[5]=(h[5]+f)|0;h[6]=(h[6]+g)|0;h[7]=(h[7]+hh)|0;
+  }
+  return h.map(function(v){return (v>>>0).toString(16).padStart(8,'0')}).join('');
+}
+/*SHA-END*/
+
+/* ---------- köməkçilər ---------- */
+var MONTHS=['yanvar','fevral','mart','aprel','may','iyun','iyul','avqust','sentyabr','oktyabr','noyabr','dekabr'];
+var WD=['Bazar','Bazar ertəsi','Çərşənbə axşamı','Çərşənbə','Cümə axşamı','Cümə','Şənbə'];
+var WDS=['Baz','B.e.','Ç.a.','Çər','C.a.','Cüm','Şən'];
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function p2(n){return String(n).padStart(2,'0')}
+function dstr(d){return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())}
+function today(){return dstr(new Date())}
+function parseD(s){var a=s.split('-');return new Date(+a[0],+a[1]-1,+a[2])}
+function addDays(s,n){var d=parseD(s);d.setDate(d.getDate()+n);return dstr(d)}
+function addMonths(m,n){var a=m.split('-');var d=new Date(+a[0],+a[1]-1+n,1);return d.getFullYear()+'-'+p2(d.getMonth()+1)}
+function niceDate(s){var d=parseD(s);return d.getDate()+' '+MONTHS[d.getMonth()]}
+function toMin(t){var a=t.split(':');return +a[0]*60+ +a[1]}
+function fromMin(m){return p2(Math.floor(m/60))+':'+p2(m%60)}
+function nowMin(){var d=new Date();return d.getHours()*60+d.getMinutes()}
+function money(n){n=Math.round((+n||0)*100)/100;return (Number.isInteger(n)?n:n.toFixed(2))+' ₼'}
+function rid(){return Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-3)}
+function initials(n){return String(n||'?').trim().split(/\s+/).slice(0,2).map(function(x){return x[0]}).join('').toUpperCase()}
+function hashPass(salt,pass){return sha256(salt+':'+pass)}
+function clone(o){return JSON.parse(JSON.stringify(o))}
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch(e){return null}}
+var toastT;
+function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('on')},3600)}
+
+/* ---------- məlumat ---------- */
+var S={shop:null,barbers:[],bookings:[],ready:false};
+var Store={db:null,got:{shop:false,barbers:false,bookings:false}};
+var ui={view:'book',meId:ls('bb_me')||null,tab:'day',day:today(),month:today().slice(0,7),scope:'me',confirm:null,
+  book:{barberId:null,serviceId:null,date:today(),time:null,name:'',phone:'',done:null},
+  login:{barberId:null,pass:'',err:''},
+  setup:{shop:'',name:'',pass:'',err:''},
+  payFor:null,payVal:'',addOpen:false,add:{name:'',phone:'',serviceId:'',time:''},
+  shopDraft:null,staffNew:{name:'',pass:''},staffPass:{},passNew:''};
+
+function saveLocal(){ls('bb_data',JSON.stringify({shop:S.shop,barbers:S.barbers,bookings:S.bookings}))}
+function applyLocal(coll,id,data){
+  if(coll==='shop'){S.shop=data;return}
+  var arr=S[coll].filter(function(x){return x.id!==id});
+  if(data)arr.push(Object.assign({},data,{id:id}));
+  S[coll]=arr;
+}
+async function put(coll,id,data){
+  applyLocal(coll,id,data);render();
+  if(Store.db){
+    try{await Store.db.doc(coll+'/'+id).set(data);return true}
+    catch(e){toast('Yadda saxlanmadı. Bir az sonra yenə yoxla.');return false}
+  }
+  saveLocal();return true;
+}
+async function del(coll,id){
+  applyLocal(coll,id,null);render();
+  if(Store.db){try{await Store.db.doc(coll+'/'+id).delete()}catch(e){toast('Silinmədi. Bir az sonra yenə yoxla.')}}
+  else saveLocal();
+}
+function me(){return S.barbers.find(function(b){return b.id===ui.meId})||null}
+function barberName(id){var b=S.barbers.find(function(x){return x.id===id});return b?b.name:'Silinmiş usta'}
+
+function firstView(){
+  if(!S.shop){ui.view='setup';return}
+  if(ui.meId&&me())ui.view='panel';else{ui.meId=null;if(ui.view==='panel'||ui.view==='setup')ui.view='book'}
+}
+function onReady(){
+  if(!S.ready){S.ready=true;firstView()}
+  else if(!S.shop)ui.view='setup';
+  else if(ui.view==='setup')ui.view='book';
+  render();
+}
+function loadLocal(){
+  var raw=ls('bb_data');
+  if(raw){try{var d=JSON.parse(raw);S.shop=d.shop||null;S.barbers=d.barbers||[];S.bookings=d.bookings||[]}catch(e){}}
+  onReady();
+}
+async function initStore(){
+  var db=null;
+  try{
+    if(FIREBASE_CONFIG&&window.firebase){firebase.initializeApp(FIREBASE_CONFIG);db=firebase.firestore()}
+  }catch(e){db=null;console.error('Firebase qoşulmadı:',e)}
+  if(!db){loadLocal();return}
+  Store.db=db;
+  var check=function(k){Store.got[k]=true;if(Store.got.shop&&Store.got.barbers&&Store.got.bookings)onReady()};
+  var fail=function(){if(!S.ready){Store.db=null;loadLocal()}else toast('Bağlantı kəsildi. Səhifəni yenilə.')};
+  db.doc('shop/settings').onSnapshot(function(s){S.shop=s.exists?clone(s.data()):null;check('shop')},fail);
+  db.collection('barbers').onSnapshot(function(q){S.barbers=q.docs.map(function(d){return Object.assign({},d.data(),{id:d.id})});check('barbers')},fail);
+  var first=true;
+  db.collection('bookings').onSnapshot(function(q){
+    S.bookings=q.docs.map(function(d){return Object.assign({},d.data(),{id:d.id})});
+    if(!first&&ui.meId){
+      var fresh=q.docChanges().filter(function(c){var b=c.doc.data();return c.type==='added'&&b&&b.barberId===ui.meId&&b.seen===false});
+      if(fresh.length){var b=fresh[0].doc.data();toast('Yeni rezerv: '+b.custName+', '+niceDate(b.date)+' '+b.time)}
+    }
+    first=false;check('bookings');
+  },fail);
+}
+
+/* ---------- hesablamalar ---------- */
+function activeOn(barberId,date,ignoreId){
+  return S.bookings.filter(function(b){return b.barberId===barberId&&b.date===date&&b.id!==ignoreId&&(b.status==='booked'||b.status==='done')});
+}
+function slotsFor(barberId,date,dur,anyTime){
+  var sh=S.shop,o=toMin(sh.open),c=toMin(sh.close),step=30,out=[];
+  var busy=activeOn(barberId,date).map(function(b){var s=toMin(b.time);return [s,s+(b.dur||30)]});
+  var floor=anyTime?-1:(date<today()?1e9:(date===today()?nowMin():-1));
+  for(var t=o;t+dur<=c;t+=step){
+    var clash=busy.some(function(x){return t<x[1]&&t+dur>x[0]});
+    out.push({t:fromMin(t),free:!clash&&t>floor});
+  }
+  return out;
+}
+function svc(id){return (S.shop&&S.shop.services||[]).find(function(s){return s.id===id})||null}
+function monthStats(month,barberId){
+  var list=S.bookings.filter(function(b){return b.date.slice(0,7)===month&&(!barberId||b.barberId===barberId)});
+  var done=list.filter(function(b){return b.status==='done'});
+  var a=month.split('-'),nDays=new Date(+a[0],+a[1],0).getDate(),perDay=[];
+  for(var i=0;i<nDays;i++)perDay.push(0);
+  var bySvc={},byBarber={},sum=0;
+  done.forEach(function(b){
+    var v=+b.paid||0;sum+=v;perDay[+b.date.slice(8)-1]+=v;
+    var k=b.serviceName||'Digər';(bySvc[k]=bySvc[k]||{n:0,sum:0}).n++;bySvc[k].sum+=v;
+    (byBarber[b.barberId]=byBarber[b.barberId]||{n:0,sum:0}).n++;byBarber[b.barberId].sum+=v;
+  });
+  return {sum:sum,count:done.length,avg:done.length?sum/done.length:0,
+    noshow:list.filter(function(b){return b.status==='noshow'}).length,
+    waiting:list.filter(function(b){return b.status==='booked'}).length,
+    perDay:perDay,bySvc:bySvc,byBarber:byBarber};
+}
+
+/* ---------- görünüşlər ---------- */
+function sure(key,label,act,extra,cls){
+  var on=ui.confirm===key;
+  return '<button class="btn '+(cls||'sm')+' danger'+(on?' sure':'')+'" data-act="'+(on?act:'ask')+'" data-key="'+key+'" '+(extra||'')+'>'+(on?'Əminsən? Bəli':label)+'</button>';
+}
+function viewSetup(){
+  var s=ui.setup;
+  return '<div class="top"><div class="brand">Bərbər rezervi</div></div>'+
+  '<div class="card"><h2>Salonunu qur</h2><p>Bir dəqiqəlik işdir. Sonra ustaları və qiymətləri paneldən əlavə edəcəksən.</p>'+
+  (s.err?'<p class="err">'+esc(s.err)+'</p>':'')+
+  '<label class="field"><span>Salonun adı</span><input class="inp" data-bind="setup.shop" value="'+esc(s.shop)+'" placeholder="Məsələn: Ülgüc"></label>'+
+  '<label class="field"><span>Sənin adın</span><input class="inp" data-bind="setup.name" value="'+esc(s.name)+'" autocomplete="name"></label>'+
+  '<label class="field"><span>Panel üçün parol</span><input class="inp" type="password" data-bind="setup.pass" data-enter="setup" value="'+esc(s.pass)+'" autocomplete="new-password"></label>'+
+  '<button class="btn block" data-act="setup">Salonu yarat</button></div>';
+}
+function ticketRows(b){
+  var s=svc(b.serviceId);
+  return '<dl><dt>Usta</dt><dd>'+(b.barberId?esc(barberName(b.barberId)):'—')+'</dd>'+
+  '<dt>Xidmət</dt><dd>'+(s?esc(s.name):'—')+'</dd>'+
+  '<dt>Gün</dt><dd>'+esc(niceDate(b.date))+', '+WD[parseD(b.date).getDay()].toLowerCase()+'</dd>'+
+  '<dt>Saat</dt><dd>'+(b.time||'—')+'</dd></dl>';
+}
+function missing(b){
+  if(!b.barberId)return 'Rezerv üçün ustanı seç.';
+  if(!b.serviceId||!svc(b.serviceId))return 'Rezerv üçün xidməti seç.';
+  if(!b.time)return 'Rezerv üçün saatı seç.';
+  if(b.name.trim().length<2)return 'Adını yaz.';
+  if(b.phone.replace(/\D/g,'').length<9)return 'Telefon nömrəni tam yaz.';
+  return '';
+}
+function viewBook(){
+  var b=ui.book,sh=S.shop,h='';
+  h+='<div class="top"><div class="brand">'+esc(sh.name)+'<small>'+esc(sh.open)+' – '+esc(sh.close)+', hər gün</small></div>'+
+     '<button class="btn ghost sm" data-act="nav" data-v="login">Bərbər girişi</button></div>';
+  if(b.done){
+    var d=b.done;
+    return h+'<div class="ticket done"><p class="big">Rezerv edildi</p><p class="note">'+esc(d.custName)+', yerin ayrıldı.</p>'+
+      '<p class="when">'+esc(d.time)+'</p><p><b>'+esc(niceDate(d.date))+', '+WD[parseD(d.date).getDay()].toLowerCase()+'</b></p>'+
+      '<div class="tear"></div><dl><dt>Usta</dt><dd>'+esc(barberName(d.barberId))+'</dd><dt>Xidmət</dt><dd>'+esc(d.serviceName)+'</dd><dt>Qiymət</dt><dd>'+money(d.price)+'</dd></dl>'+
+      '<div class="tear"></div><button class="btn block ghost" data-act="newBook">Yeni rezerv et</button></div>';
+  }
+  h+='<div class="hero"><h1>Növbə gözləmə, vaxtını tut</h1><p>Ustanı, xidməti və saatı seç. Yerin səni gözləyəcək.</p></div>';
+  if(!S.barbers.length)return h+'<div class="empty">Hələ usta əlavə edilməyib. Salon sahibi panelə girib ustaları əlavə etməlidir.</div>';
+  h+='<div class="book"><div>';
+  h+='<section class="step"><h2><span class="n">1</span>Usta</h2><div class="opts">'+S.barbers.slice().sort(function(x,y){return x.name.localeCompare(y.name)}).map(function(x){
+    return '<button class="opt" data-act="pickBarber" data-v="'+x.id+'" aria-pressed="'+(b.barberId===x.id)+'"><span class="ava">'+esc(initials(x.name))+'</span><b>'+esc(x.name)+'</b></button>'}).join('')+'</div></section>';
+  if(b.barberId){
+    h+='<section class="step"><h2><span class="n">2</span>Xidmət</h2><div class="svc">'+(sh.services||[]).map(function(s){
+      return '<button class="opt" data-act="pickService" data-v="'+s.id+'" aria-pressed="'+(b.serviceId===s.id)+'"><span><b>'+esc(s.name)+'</b><i>'+s.min+' dəqiqə</i></span><span class="price">'+money(s.price)+'</span></button>'}).join('')+'</div></section>';
+  }
+  var s=svc(b.serviceId);
+  if(b.barberId&&s){
+    var days='';
+    for(var i=0;i<14;i++){var ds=addDays(today(),i),dd=parseD(ds);
+      days+='<button class="day" data-act="pickDate" data-v="'+ds+'" aria-pressed="'+(b.date===ds)+'"><i>'+(i===0?'Bu gün':WDS[dd.getDay()])+'</i><b>'+dd.getDate()+'</b><i>'+MONTHS[dd.getMonth()].slice(0,3)+'</i></button>'}
+    h+='<section class="step"><h2><span class="n">3</span>Gün</h2><div class="days">'+days+'</div></section>';
+    var sl=slotsFor(b.barberId,b.date,s.min);
+    h+='<section class="step"><h2><span class="n">4</span>Saat</h2>'+(sl.some(function(x){return x.free})?
+      '<div class="slots">'+sl.map(function(x){return '<button class="slot" data-act="pickTime" data-v="'+x.t+'" '+(x.free?'':'disabled')+' aria-pressed="'+(b.time===x.t)+'">'+x.t+'</button>'}).join('')+'</div>':
+      '<div class="empty">Bu günə boş vaxt qalmayıb. Başqa gün seç.</div>')+'</section>';
+    if(b.time){
+      h+='<section class="step"><h2><span class="n">5</span>Əlaqə</h2><div class="two">'+
+      '<label class="field"><span>Adın</span><input class="inp" data-bind="book.name" data-re value="'+esc(b.name)+'" autocomplete="name"></label>'+
+      '<label class="field"><span>Telefon</span><input class="inp" type="tel" inputmode="tel" data-bind="book.phone" data-re value="'+esc(b.phone)+'" placeholder="050 123 45 67" autocomplete="tel"></label></div></section>';
+    }
+  }
+  h+='</div>';
+  var miss=missing(b);
+  h+='<aside class="ticket"><h3>Sənin talonun</h3>'+ticketRows(b)+'<div class="tear"></div>'+
+     '<div class="total"><span class="note">Qiymət</span><span class="price">'+(s?money(s.price):'—')+'</span></div>'+
+     '<button class="btn block" data-act="confirmBook" '+(miss?'disabled':'')+'>Rezerv et</button>'+
+     (miss?'<p class="note" style="margin-top:10px">'+miss+'</p>':'<p class="note" style="margin-top:10px">Ödəniş salonda, işdən sonra edilir.</p>')+'</aside></div>';
+  return h;
+}
+function viewLogin(){
+  var l=ui.login;
+  return '<div class="top"><div class="brand">'+esc(S.shop.name)+'</div><button class="btn ghost sm" data-act="nav" data-v="book">Rezerv səhifəsi</button></div>'+
+  '<div class="card"><h2>Bərbər girişi</h2><p>Adını seç və parolunu yaz.</p>'+
+  '<div class="who">'+S.barbers.slice().sort(function(x,y){return x.name.localeCompare(y.name)}).map(function(x){
+    return '<button class="opt" data-act="loginPick" data-v="'+x.id+'" aria-pressed="'+(l.barberId===x.id)+'"><span class="ava">'+esc(initials(x.name))+'</span><b>'+esc(x.name)+'</b></button>'}).join('')+'</div>'+
+  (l.err?'<p class="err">'+esc(l.err)+'</p>':'')+
+  '<label class="field"><span>Parol</span><input class="inp" type="password" data-bind="login.pass" data-enter="login" value="'+esc(l.pass)+'" autocomplete="current-password"></label>'+
+  '<button class="btn block" data-act="login">Daxil ol</button></div>';
+}
+var STATUS={booked:'Gözlənilir',done:'Bitdi',noshow:'Gəlmədi',cancelled:'Ləğv edilib'};
+function apptCard(b){
+  var h='<div class="appt'+(b.status==='noshow'||b.status==='cancelled'?' off':'')+'"><div class="t">'+esc(b.time)+'<small>'+(b.dur||30)+' dəq</small></div><div>'+
+    '<div class="who-n">'+esc(b.custName||'Müştəri')+' <span class="chip '+b.status+'">'+STATUS[b.status]+'</span></div>'+
+    '<div class="meta">'+esc(b.serviceName)+', '+money(b.price)+(b.custPhone?' · '+esc(b.custPhone):'')+'</div></div><div class="acts">';
+  if(ui.payFor===b.id){
+    h+='<div class="pay"><input class="inp sm" type="number" min="0" step="0.5" inputmode="decimal" data-bind="payVal" data-enter="paySave" data-id="'+b.id+'" value="'+esc(ui.payVal)+'" aria-label="Ödənilən məbləğ, manatla"><span>₼</span>'+
+       '<button class="btn sm" data-act="paySave" data-id="'+b.id+'">Ödənişi yadda saxla</button><button class="btn sm ghost" data-act="payCancel">Bağla</button></div>';
+  }else if(b.status==='booked'){
+    h+='<button class="btn sm" data-act="payOpen" data-id="'+b.id+'">Ödənişi yaz</button>'+
+       '<button class="btn sm ghost" data-act="status" data-id="'+b.id+'" data-v="noshow">Gəlmədi</button>'+
+       sure('c_'+b.id,'Ləğv et','status','data-id="'+b.id+'" data-v="cancelled"');
+  }else if(b.status==='done'){
+    h+='<span class="paid">'+money(b.paid)+'</span><span class="note">ödənilib</span><button class="btn sm ghost" data-act="payOpen" data-id="'+b.id+'">Düzəlt</button>';
+  }else{
+    h+='<button class="btn sm ghost" data-act="status" data-id="'+b.id+'" data-v="booked">Geri qaytar</button>';
+  }
+  return h+'</div></div>';
+}
+function tabDay(m){
+  var list=S.bookings.filter(function(b){return b.barberId===m.id&&b.date===ui.day}).sort(function(a,b){return a.time<b.time?-1:1});
+  var fresh=S.bookings.filter(function(b){return b.barberId===m.id&&b.seen===false&&b.status==='booked'}).sort(function(a,b){return (a.date+a.time)<(b.date+b.time)?-1:1});
+  var earned=list.filter(function(b){return b.status==='done'}).reduce(function(a,b){return a+(+b.paid||0)},0);
+  var d=parseD(ui.day),h='';
+  if(fresh.length){
+    h+='<div class="fresh"><h3>'+fresh.length+' yeni rezerv</h3><ul>'+fresh.slice(0,6).map(function(b){
+      return '<li><b>'+esc(b.custName)+'</b>, '+esc(niceDate(b.date))+' saat '+esc(b.time)+', '+esc(b.serviceName)+'</li>'}).join('')+
+      (fresh.length>6?'<li>və daha '+(fresh.length-6)+' rezerv</li>':'')+'</ul><button class="btn sm" data-act="seenAll">Gördüm</button></div>';
+  }
+  h+='<div class="bar"><div class="nav"><button class="btn sm ghost" data-act="day" data-v="-1" aria-label="Əvvəlki gün">‹</button>'+
+     '<h2>'+esc(niceDate(ui.day))+'<small>'+(ui.day===today()?'Bu gün, ':'')+WD[d.getDay()].toLowerCase()+'</small></h2>'+
+     '<button class="btn sm ghost" data-act="day" data-v="1" aria-label="Növbəti gün">›</button>'+
+     (ui.day!==today()?'<button class="btn sm ghost" data-act="day" data-v="0">Bu gün</button>':'')+'</div>'+
+     '<button class="btn sm" data-act="addOpen">Müştəri əlavə et</button></div>';
+  if(ui.addOpen){
+    var a=ui.add,s=svc(a.serviceId)||(S.shop.services||[])[0];
+    var free=s?slotsFor(m.id,ui.day,s.min,true).filter(function(x){return x.free}):[];
+    h+='<div class="panel-box"><h3>Müştəri əlavə et</h3><div class="two">'+
+      '<label class="field"><span>Ad</span><input class="inp" data-bind="add.name" value="'+esc(a.name)+'" placeholder="Boş qala bilər"></label>'+
+      '<label class="field"><span>Telefon</span><input class="inp" type="tel" data-bind="add.phone" value="'+esc(a.phone)+'" placeholder="Boş qala bilər"></label>'+
+      '<label class="field"><span>Xidmət</span><select class="inp" data-bind="add.serviceId" data-re>'+(S.shop.services||[]).map(function(x){return '<option value="'+x.id+'"'+(s&&x.id===s.id?' selected':'')+'>'+esc(x.name)+' ('+money(x.price)+')</option>'}).join('')+'</select></label>'+
+      '<label class="field"><span>Saat</span><select class="inp" data-bind="add.time">'+(free.length?free.map(function(x){return '<option'+(a.time===x.t?' selected':'')+'>'+x.t+'</option>'}).join(''):'<option value="">Boş vaxt yoxdur</option>')+'</select></label></div>'+
+      '<div class="pay"><button class="btn sm" data-act="addSave" '+(free.length?'':'disabled')+'>Cədvələ əlavə et</button><button class="btn sm ghost" data-act="addCancel">Bağla</button></div></div>';
+  }
+  if(list.length){
+    h+='<p class="note" style="margin-bottom:12px">'+list.filter(function(b){return b.status==='booked'||b.status==='done'}).length+' müştəri, bu günün qazancı <b style="color:var(--brass)">'+money(earned)+'</b></p>';
+    h+=list.map(apptCard).join('');
+  }else h+='<div class="empty">Bu günə rezerv yoxdur. Növbəsiz gələn müştərini özün əlavə edə bilərsən.</div>';
+  return h;
+}
+function tabReport(m){
+  var all=m.owner&&ui.scope==='all',st=monthStats(ui.month,all?null:m.id),a=ui.month.split('-');
+  var max=Math.max.apply(null,st.perDay.concat([1])),n=st.perDay.length,tmo=today().slice(0,7)===ui.month,tday=+today().slice(8);
+  var h='<div class="bar"><div class="nav"><button class="btn sm ghost" data-act="month" data-v="-1" aria-label="Əvvəlki ay">‹</button>'+
+    '<h2>'+MONTHS[+a[1]-1][0].toUpperCase()+MONTHS[+a[1]-1].slice(1)+' '+a[0]+'</h2>'+
+    '<button class="btn sm ghost" data-act="month" data-v="1" aria-label="Növbəti ay">›</button></div>'+
+    (m.owner?'<div class="seg"><button data-act="scope" data-v="me" aria-pressed="'+(!all)+'">Mənim</button><button data-act="scope" data-v="all" aria-pressed="'+all+'">Bütün salon</button></div>':'')+'</div>';
+  h+='<div class="panel-box"><p class="note">'+(all?'Salonun aylıq qazancı':'Aylıq qazancın')+'</p><p class="earn">'+money(st.sum)+'</p>'+
+     '<ul class="facts"><li><b>'+st.count+'</b>müştəri</li><li><b>'+money(st.avg)+'</b>orta çek</li><li><b>'+st.noshow+'</b>gəlməyən</li><li><b>'+st.waiting+'</b>gözlənilən rezerv</li></ul></div>';
+  h+='<div class="panel-box"><h3>Günlər üzrə qazanc</h3>';
+  if(st.sum>0){
+    h+='<div class="chart" role="img" aria-label="Ayın günləri üzrə qazanc qrafiki">'+st.perDay.map(function(v,i){
+      return '<div class="'+(v?'':'z')+(tmo&&i+1===tday?' today':'')+'" style="height:'+Math.max(2,Math.round(v/max*100))+'%" title="'+(i+1)+' '+MONTHS[+a[1]-1]+': '+money(v)+'"></div>'}).join('')+'</div>'+
+      '<div class="axis">'+st.perDay.map(function(v,i){var d=i+1;return '<span>'+((d===1||d%5===0||d===n)&&!(d===n&&n%5===1)?d:'')+'</span>'}).join('')+'</div>';
+  }else h+='<p class="note">Bu ay üçün yazılmış ödəniş yoxdur. Müştəri gedəndən sonra cədvəldə “Ödənişi yaz” düyməsini bas.</p>';
+  h+='</div>';
+  var svcKeys=Object.keys(st.bySvc).sort(function(x,y){return st.bySvc[y].sum-st.bySvc[x].sum});
+  if(svcKeys.length){
+    h+='<div class="panel-box"><h3>Xidmətlər üzrə</h3><div class="scroll"><table><thead><tr><th>Xidmət</th><th class="r">Müştəri</th><th class="r">Qazanc</th></tr></thead><tbody>'+
+      svcKeys.map(function(k){return '<tr><td>'+esc(k)+'</td><td class="r">'+st.bySvc[k].n+'</td><td class="r">'+money(st.bySvc[k].sum)+'</td></tr>'}).join('')+'</tbody></table></div></div>';
+  }
+  if(all){
+    var ids=S.barbers.map(function(b){return b.id});
+    Object.keys(st.byBarber).forEach(function(id){if(ids.indexOf(id)<0)ids.push(id)});
+    h+='<div class="panel-box"><h3>Ustalar üzrə</h3><div class="scroll"><table><thead><tr><th>Usta</th><th class="r">Müştəri</th><th class="r">Qazanc</th></tr></thead><tbody>'+
+      ids.map(function(id){var r=st.byBarber[id]||{n:0,sum:0};return '<tr><td>'+esc(barberName(id))+'</td><td class="r">'+r.n+'</td><td class="r">'+money(r.sum)+'</td></tr>'}).join('')+'</tbody></table></div></div>';
+  }
+  return h;
+}
+function tabSettings(m){
+  var h='<div class="panel-box"><h3>Parolum</h3><div class="pay"><input class="inp sm" type="password" style="width:200px" data-bind="passNew" value="'+esc(ui.passNew)+'" placeholder="Yeni parol" autocomplete="new-password"><button class="btn sm" data-act="savePass">Parolu dəyiş</button></div></div>';
+  if(!m.owner)return h;
+  var d=ui.shopDraft;
+  h+='<div class="panel-box"><h3>Salon</h3><div class="two">'+
+     '<label class="field"><span>Salonun adı</span><input class="inp" data-bind="shopDraft.name" value="'+esc(d.name)+'"></label>'+
+     '<label class="field"><span>Açılış</span><input class="inp" type="time" step="1800" data-bind="shopDraft.open" value="'+esc(d.open)+'"></label>'+
+     '<label class="field"><span>Bağlanış</span><input class="inp" type="time" step="1800" data-bind="shopDraft.close" value="'+esc(d.close)+'"></label></div>'+
+     '<h3 style="margin-top:8px">Xidmətlər və qiymətlər</h3><div class="row head"><span>Ad</span><span>Dəqiqə</span><span>Qiymət, ₼</span><span></span></div>'+
+     d.services.map(function(s,i){return '<div class="row"><input class="inp sm" data-bind="shopDraft.services.'+i+'.name" value="'+esc(s.name)+'" aria-label="Xidmətin adı">'+
+       '<select class="inp sm" data-bind="shopDraft.services.'+i+'.min" data-num aria-label="Müddət">'+[30,60,90,120].map(function(v){return '<option'+(+s.min===v?' selected':'')+'>'+v+'</option>'}).join('')+'</select>'+
+       '<input class="inp sm" type="number" min="0" step="0.5" data-bind="shopDraft.services.'+i+'.price" data-num value="'+esc(s.price)+'" aria-label="Qiymət">'+
+       '<button class="btn sm ghost" data-act="svcDel" data-v="'+i+'" aria-label="Xidməti sil">Sil</button></div>'}).join('')+
+     '<div class="pay" style="margin-top:12px"><button class="btn sm ghost" data-act="svcAdd">Xidmət əlavə et</button><button class="btn sm" data-act="saveShop">Salonu yadda saxla</button></div></div>';
+  h+='<div class="panel-box"><h3>Ustalar</h3>'+S.barbers.slice().sort(function(x,y){return x.name.localeCompare(y.name)}).map(function(b){
+       return '<div class="staff"><b>'+esc(b.name)+(b.owner?' <span class="chip">sahib</span>':'')+'</b>'+
+       '<input class="inp sm" type="password" data-bind="staffPass.'+b.id+'" value="'+esc(ui.staffPass[b.id]||'')+'" placeholder="Yeni parol" aria-label="'+esc(b.name)+' üçün yeni parol" autocomplete="new-password">'+
+       '<button class="btn sm ghost" data-act="staffPass" data-id="'+b.id+'">Parolu yenilə</button>'+
+       (b.id===m.id?'':sure('s_'+b.id,'Ustanı sil','staffDel','data-id="'+b.id+'"'))+'</div>'}).join('')+
+     '<h3 style="margin-top:18px">Yeni usta</h3><div class="pay"><input class="inp sm" style="width:180px" data-bind="staffNew.name" value="'+esc(ui.staffNew.name)+'" placeholder="Ad">'+
+     '<input class="inp sm" style="width:160px" type="password" data-bind="staffNew.pass" value="'+esc(ui.staffNew.pass)+'" placeholder="Parol" autocomplete="new-password">'+
+     '<button class="btn sm" data-act="staffAdd">Ustanı əlavə et</button></div></div>';
+  h+='<div class="panel-box"><h3>Hər şeyi sıfırla</h3><p class="note" style="margin-bottom:12px">Bütün rezervlər, ustalar və parametrlər silinir. Geri qaytarmaq olmur.</p>'+sure('reset','Bütün məlumatları sil','resetAll','')+'</div>';
+  return h;
+}
+function viewPanel(){
+  var m=me();if(!m){ui.view='book';return viewBook()}
+  var fresh=S.bookings.filter(function(b){return b.barberId===m.id&&b.seen===false&&b.status==='booked'}).length;
+  var h='<div class="top"><div class="brand">'+esc(m.name)+'<small>'+esc(S.shop.name)+(m.owner?', sahib':'')+'</small></div><button class="btn ghost sm" data-act="logout">Çıxış</button></div>'+
+    '<div class="tabs" role="tablist">'+[['day','Cədvəl'],['report','Hesabat'],['settings','Parametrlər']].map(function(t){
+      return '<button class="tab" role="tab" data-act="tab" data-v="'+t[0]+'" aria-selected="'+(ui.tab===t[0])+'">'+t[1]+(t[0]==='day'&&fresh?'<span class="dot">'+fresh+'</span>':'')+'</button>'}).join('')+'</div>';
+  return h+(ui.tab==='day'?tabDay(m):ui.tab==='report'?tabReport(m):tabSettings(m));
+}
+function render(){
+  var app=document.getElementById('app');
+  if(!S.ready){app.innerHTML='<p class="loading">Yüklənir…</p>';return}
+  if(ui.view!=='setup'&&!S.shop)ui.view='setup';
+  var a=document.activeElement,key=a&&a.dataset?a.dataset.bind:null,pos=null;
+  try{pos=a.selectionStart}catch(e){}
+  app.innerHTML=ui.view==='setup'?viewSetup():ui.view==='login'?viewLogin():ui.view==='panel'?viewPanel():viewBook();
+  if(S.shop)document.title=S.shop.name+' – rezerv';
+  if(key){var el=app.querySelector('[data-bind="'+key+'"]');if(el){el.focus();try{if(pos!=null)el.setSelectionRange(pos,pos)}catch(e){}}}
+}
+
+/* ---------- əməliyyatlar ---------- */
+function setPath(o,path,v){var p=path.split('.');for(var i=0;i<p.length-1;i++)o=o[p[i]];o[p[p.length-1]]=v}
+function draftShop(){ui.shopDraft=clone(S.shop);ui.staffNew={name:'',pass:''};ui.staffPass={};ui.passNew=''}
+var A={
+  nav:function(d){ui.view=d.v;ui.login={barberId:null,pass:'',err:''}},
+  pickBarber:function(d){ui.book.barberId=d.v;ui.book.time=null},
+  pickService:function(d){ui.book.serviceId=d.v;ui.book.time=null},
+  pickDate:function(d){ui.book.date=d.v;ui.book.time=null},
+  pickTime:function(d){ui.book.time=d.v},
+  newBook:function(){ui.book={barberId:null,serviceId:null,date:today(),time:null,name:'',phone:'',done:null}},
+  confirmBook:async function(){
+    var b=ui.book,s=svc(b.serviceId);if(missing(b)||!s)return;
+    var ok=slotsFor(b.barberId,b.date,s.min).some(function(x){return x.t===b.time&&x.free});
+    if(!ok){b.time=null;toast('Bu saat indicə tutuldu. Başqa saat seç.');return}
+    var doc={barberId:b.barberId,date:b.date,time:b.time,dur:s.min,serviceId:s.id,serviceName:s.name,price:+s.price||0,
+      custName:b.name.trim(),custPhone:b.phone.trim(),status:'booked',paid:null,seen:false,createdAt:Date.now()};
+    if(await put('bookings',rid(),doc))b.done=doc;
+  },
+  loginPick:function(d){ui.login.barberId=d.v;ui.login.err=''},
+  login:function(){
+    var l=ui.login,b=S.barbers.find(function(x){return x.id===l.barberId});
+    if(!b){l.err='Əvvəlcə adını seç.';return}
+    if(hashPass(b.salt,l.pass)!==b.hash){l.err='Parol yanlışdır. Yenidən yoxla.';l.pass='';return}
+    ui.meId=b.id;ls('bb_me',b.id);ui.view='panel';ui.tab='day';ui.day=today();ui.login={barberId:null,pass:'',err:''};
+  },
+  logout:function(){ui.meId=null;ls('bb_me',null);ui.view='book'},
+  tab:function(d){ui.tab=d.v;ui.payFor=null;ui.addOpen=false;if(d.v==='settings')draftShop()},
+  day:function(d){ui.day=d.v==='0'?today():addDays(ui.day,+d.v);ui.addOpen=false;ui.payFor=null},
+  month:function(d){ui.month=addMonths(ui.month,+d.v)},
+  scope:function(d){ui.scope=d.v},
+  ask:function(d){ui.confirm=d.key;return 'keep'},
+  seenAll:async function(){
+    var list=S.bookings.filter(function(b){return b.barberId===ui.meId&&b.seen===false});
+    for(var i=0;i<list.length;i++){var b=Object.assign({},list[i],{seen:true});var id=b.id;delete b.id;await put('bookings',id,b)}
+  },
+  payOpen:function(d){var b=S.bookings.find(function(x){return x.id===d.id});ui.payFor=d.id;ui.payVal=b.paid!=null?b.paid:b.price},
+  payCancel:function(){ui.payFor=null},
+  paySave:async function(d){
+    var b=S.bookings.find(function(x){return x.id===d.id}),v=parseFloat(ui.payVal);
+    if(!b)return;if(isNaN(v)||v<0){toast('Məbləği rəqəmlə yaz.');return}
+    var doc=Object.assign({},b,{status:'done',paid:v,seen:true});delete doc.id;ui.payFor=null;
+    if(await put('bookings',d.id,doc))toast('Ödəniş yadda saxlandı: '+money(v));
+  },
+  status:async function(d){
+    var b=S.bookings.find(function(x){return x.id===d.id});if(!b)return;
+    if(d.v==='booked'&&activeOn(b.barberId,b.date,b.id).some(function(o){var s=toMin(o.time),t=toMin(b.time);return t<s+(o.dur||30)&&t+(b.dur||30)>s})){toast('Bu saat artıq başqa müştəridədir.');return}
+    var doc=Object.assign({},b,{status:d.v,seen:true,paid:d.v==='booked'?null:b.paid});delete doc.id;
+    await put('bookings',d.id,doc);
+  },
+  addOpen:function(){var s=(S.shop.services||[])[0];ui.addOpen=true;ui.add={name:'',phone:'',serviceId:s?s.id:'',time:''}},
+  addCancel:function(){ui.addOpen=false},
+  addSave:async function(){
+    var a=ui.add,s=svc(a.serviceId)||(S.shop.services||[])[0];if(!s)return;
+    var free=slotsFor(ui.meId,ui.day,s.min,true).filter(function(x){return x.free});
+    var t=free.some(function(x){return x.t===a.time})?a.time:(free[0]&&free[0].t);
+    if(!t){toast('Bu günə boş vaxt yoxdur.');return}
+    ui.addOpen=false;
+    await put('bookings',rid(),{barberId:ui.meId,date:ui.day,time:t,dur:s.min,serviceId:s.id,serviceName:s.name,price:+s.price||0,
+      custName:a.name.trim()||'Növbəsiz müştəri',custPhone:a.phone.trim(),status:'booked',paid:null,seen:true,createdAt:Date.now()});
+  },
+  savePass:async function(){
+    var m=me();if(ui.passNew.length<4){toast('Parol ən azı 4 simvol olmalıdır.');return}
+    var salt=rid(),doc=Object.assign({},m,{salt:salt,hash:hashPass(salt,ui.passNew)});delete doc.id;ui.passNew='';
+    if(await put('barbers',m.id,doc))toast('Parol dəyişdirildi.');
+  },
+  svcAdd:function(){ui.shopDraft.services.push({id:rid(),name:'',min:30,price:10})},
+  svcDel:function(d){ui.shopDraft.services.splice(+d.v,1)},
+  saveShop:async function(){
+    var d=clone(ui.shopDraft);
+    d.name=(d.name||'').trim();d.services=d.services.filter(function(s){return (s.name||'').trim()}).map(function(s){return {id:s.id,name:s.name.trim(),min:+s.min||30,price:+s.price||0}});
+    if(!d.name){toast('Salonun adını yaz.');return}
+    if(!d.open||!d.close||toMin(d.close)<=toMin(d.open)){toast('Bağlanış saatı açılışdan sonra olmalıdır.');return}
+    if(!d.services.length){toast('Ən azı bir xidmət saxla.');return}
+    if(await put('shop','settings',d)){toast('Salon yadda saxlandı.');draftShop()}
+  },
+  staffAdd:async function(){
+    var n=ui.staffNew.name.trim(),p=ui.staffNew.pass;
+    if(n.length<2){toast('Ustanın adını yaz.');return}
+    if(p.length<4){toast('Parol ən azı 4 simvol olmalıdır.');return}
+    var salt=rid();ui.staffNew={name:'',pass:''};
+    if(await put('barbers',rid(),{name:n,owner:false,salt:salt,hash:hashPass(salt,p)}))toast(n+' əlavə edildi.');
+  },
+  staffPass:async function(d){
+    var b=S.barbers.find(function(x){return x.id===d.id}),p=ui.staffPass[d.id]||'';
+    if(!b)return;if(p.length<4){toast('Parol ən azı 4 simvol olmalıdır.');return}
+    var salt=rid(),doc=Object.assign({},b,{salt:salt,hash:hashPass(salt,p)});delete doc.id;ui.staffPass[d.id]='';
+    if(await put('barbers',d.id,doc))toast(b.name+' üçün parol yeniləndi.');
+  },
+  staffDel:async function(d){await del('barbers',d.id)},
+  resetAll:async function(){
+    var bk=S.bookings.map(function(b){return b.id}),br=S.barbers.map(function(b){return b.id}),i;
+    ui.meId=null;ls('bb_me',null);
+    for(i=0;i<bk.length;i++)await del('bookings',bk[i]);
+    for(i=0;i<br.length;i++)await del('barbers',br[i]);
+    S.shop=null;ui.view='setup';ui.setup={shop:'',name:'',pass:'',err:''};
+    if(Store.db){try{await Store.db.doc('shop/settings').delete()}catch(e){}}else saveLocal();
+  },
+  setup:async function(){
+    var s=ui.setup;
+    if(s.shop.trim().length<2){s.err='Salonun adını yaz.';return}
+    if(s.name.trim().length<2){s.err='Adını yaz.';return}
+    if(s.pass.length<4){s.err='Parol ən azı 4 simvol olmalıdır.';return}
+    var salt=rid(),id=rid();
+    var ok=await put('shop','settings',{name:s.shop.trim(),open:'10:00',close:'21:00',services:[
+      {id:'sac',name:'Saç kəsimi',min:30,price:15},{id:'saqqal',name:'Saqqal düzəltmə',min:30,price:10},{id:'kompleks',name:'Saç və saqqal',min:60,price:22}]});
+    if(!ok){s.err='Yaratmaq alınmadı. Bu səhifədə dəyişiklik etmək icazən olmaya bilər.';S.shop=null;return}
+    await put('barbers',id,{name:s.name.trim(),owner:true,salt:salt,hash:hashPass(salt,s.pass)});
+    ui.meId=id;ls('bb_me',id);ui.view='panel';ui.tab='day';
+  }
+};
+document.addEventListener('click',async function(e){
+  var el=e.target.closest('[data-act]');if(!el||el.disabled)return;
+  var fn=A[el.dataset.act];if(!fn)return;
+  var r=await fn(el.dataset);
+  if(r!=='keep')ui.confirm=null;
+  render();
+});
+document.addEventListener('input',function(e){
+  var el=e.target.closest('[data-bind]');if(!el)return;
+  var v=el.value;if(el.dataset.num!==undefined)v=v===''?'':+v;
+  setPath(ui,el.dataset.bind,v);
+  if(el.dataset.re!==undefined)render();
+});
+document.addEventListener('keydown',async function(e){
+  if(e.key!=='Enter')return;var el=e.target.closest('[data-enter]');if(!el)return;
+  e.preventDefault();await A[el.dataset.enter](el.dataset);render();
+});
+initStore();
+</script>
+</body>
+</html>
