@@ -199,6 +199,7 @@ td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
      appId: "..."
    };
 
+   null qalsa, məlumat yalnız bu brauzerdə (localStorage) saxlanır.
    ============================================================ */
 var FIREBASE_CONFIG = {
   apiKey: "AIzaSyBP3GodcLrGVe4FE3X-d31jrGJX1gkGLUI",
@@ -209,6 +210,16 @@ var FIREBASE_CONFIG = {
   appId: "1:995074249864:web:15b769182a434cd52e3b3d",
   measurementId: "G-HBTQGXGDM5"
 };
+
+/* ============================================================
+   TELEGRAM BİLDİRİŞİ
+   Cloudflare Worker-in ünvanını bura yaz, sonunda / olmasın.
+   Məsələn: "https://berber-bildiris.adin.workers.dev"
+   Boş qalsa, Telegram bildirişi göndərilmir.
+   Bot tokenini bura YAZMA, o yalnız Cloudflare-də saxlanır.
+   ============================================================ */
+var NOTIFY_URL = "";
+
 
 /*SHA-START*/
 function sha256(str){
@@ -269,7 +280,7 @@ var ui={view:'book',meId:ls('bb_me')||null,tab:'day',day:today(),month:today().s
   login:{barberId:null,pass:'',err:''},
   setup:{shop:'',name:'',pass:'',err:''},
   payFor:null,payVal:'',addOpen:false,add:{name:'',phone:'',serviceId:'',time:''},
-  shopDraft:null,staffNew:{name:'',pass:''},staffPass:{},passNew:''};
+  shopDraft:null,staffNew:{name:'',pass:''},staffPass:{},passNew:'',tgNew:''};
 
 function saveLocal(){ls('bb_data',JSON.stringify({shop:S.shop,barbers:S.barbers,bookings:S.bookings}))}
 function applyLocal(coll,id,data){
@@ -329,6 +340,15 @@ async function initStore(){
     }
     first=false;check('bookings');
   },fail);
+}
+
+/* ---------- Telegram ---------- */
+async function notify(payload){
+  if(!NOTIFY_URL||!payload.chatId)return null;
+  try{
+    var r=await fetch(NOTIFY_URL.replace(/\/+$/,'')+'/notify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    return await r.json();
+  }catch(e){return {ok:false,error:'Bildiriş xidmətinə qoşulmaq olmadı.'}}
 }
 
 /* ---------- hesablamalar ---------- */
@@ -528,6 +548,11 @@ function tabReport(m){
 }
 function tabSettings(m){
   var h='<div class="panel-box"><h3>Parolum</h3><div class="pay"><input class="inp sm" type="password" style="width:200px" data-bind="passNew" value="'+esc(ui.passNew)+'" placeholder="Yeni parol" autocomplete="new-password"><button class="btn sm" data-act="savePass">Parolu dəyiş</button></div></div>';
+  h+='<div class="panel-box"><h3>Telegram bildirişi</h3>'+(NOTIFY_URL?
+     '<p class="note" style="margin-bottom:12px">'+(m.tg?'Qoşulub. Yeni rezervlər Telegramına gəlir.':'Salonun Telegram botuna /start yaz. Bot sənə bir kod göndərəcək, onu bura yaz.')+'</p>'+
+     '<div class="pay"><input class="inp sm" style="width:200px" inputmode="numeric" data-bind="tgNew" value="'+esc(ui.tgNew)+'" placeholder="Botun verdiyi kod" aria-label="Telegram kodu">'+
+     '<button class="btn sm" data-act="saveTg">Kodu yadda saxla</button>'+(m.tg?'<button class="btn sm ghost" data-act="testTg">Sınaq mesajı göndər</button>':'')+'</div>':
+     '<p class="note">Bildiriş xidməti hələ qoşulmayıb. Salon sahibi saytın kodunda NOTIFY_URL ünvanını yazmalıdır.</p>')+'</div>';
   if(!m.owner)return h;
   var d=ui.shopDraft;
   h+='<div class="panel-box"><h3>Salon</h3><div class="two">'+
@@ -572,7 +597,7 @@ function render(){
 
 /* ---------- əməliyyatlar ---------- */
 function setPath(o,path,v){var p=path.split('.');for(var i=0;i<p.length-1;i++)o=o[p[i]];o[p[p.length-1]]=v}
-function draftShop(){ui.shopDraft=clone(S.shop);ui.staffNew={name:'',pass:''};ui.staffPass={};ui.passNew=''}
+function draftShop(){var m=me();ui.shopDraft=clone(S.shop);ui.staffNew={name:'',pass:''};ui.staffPass={};ui.passNew='';ui.tgNew=m&&m.tg?m.tg:''}
 var A={
   nav:function(d){ui.view=d.v;ui.login={barberId:null,pass:'',err:''}},
   pickBarber:function(d){ui.book.barberId=d.v;ui.book.time=null},
@@ -586,7 +611,11 @@ var A={
     if(!ok){b.time=null;toast('Bu saat indicə tutuldu. Başqa saat seç.');return}
     var doc={barberId:b.barberId,date:b.date,time:b.time,dur:s.min,serviceId:s.id,serviceName:s.name,price:+s.price||0,
       custName:b.name.trim(),custPhone:b.phone.trim(),status:'booked',paid:null,seen:false,createdAt:Date.now()};
-    if(await put('bookings',rid(),doc))b.done=doc;
+    if(await put('bookings',rid(),doc)){
+      b.done=doc;
+      var br=S.barbers.find(function(x){return x.id===doc.barberId});
+      if(br&&br.tg)notify({chatId:br.tg,custName:doc.custName,custPhone:doc.custPhone,date:niceDate(doc.date)+', '+WD[parseD(doc.date).getDay()].toLowerCase(),time:doc.time,serviceName:doc.serviceName,price:doc.price,barberName:br.name,shopName:S.shop.name});
+    }
   },
   loginPick:function(d){ui.login.barberId=d.v;ui.login.err=''},
   login:function(){
@@ -634,6 +663,16 @@ var A={
     var m=me();if(ui.passNew.length<4){toast('Parol ən azı 4 simvol olmalıdır.');return}
     var salt=rid(),doc=Object.assign({},m,{salt:salt,hash:hashPass(salt,ui.passNew)});delete doc.id;ui.passNew='';
     if(await put('barbers',m.id,doc))toast('Parol dəyişdirildi.');
+  },
+  saveTg:async function(){
+    var m=me(),v=String(ui.tgNew||'').trim();
+    if(v&&!/^-?\d{4,20}$/.test(v)){toast('Kod yalnız rəqəmlərdən ibarət olmalıdır.');return}
+    var doc=Object.assign({},m,{tg:v});delete doc.id;
+    if(await put('barbers',m.id,doc))toast(v?'Telegram kodu yadda saxlandı.':'Telegram bildirişi söndürüldü.');
+  },
+  testTg:async function(){
+    var m=me(),r=await notify({chatId:m.tg,test:true});
+    toast(r&&r.ok?'Sınaq mesajı göndərildi. Telegrama bax.':'Göndərilmədi: '+((r&&r.error)||'kodu yoxla.'));
   },
   svcAdd:function(){ui.shopDraft.services.push({id:rid(),name:'',min:30,price:10})},
   svcDel:function(d){ui.shopDraft.services.splice(+d.v,1)},
