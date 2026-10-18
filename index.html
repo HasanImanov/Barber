@@ -356,7 +356,8 @@ function activeOn(barberId,date,ignoreId){
   return S.bookings.filter(function(b){return b.barberId===barberId&&b.date===date&&b.id!==ignoreId&&(b.status==='booked'||b.status==='done')});
 }
 function slotsFor(barberId,date,dur,anyTime){
-  var sh=S.shop,o=toMin(sh.open),c=toMin(sh.close),step=30,out=[];
+  var sh=S.shop,o=toMin(sh.open),c=toMin(sh.close),out=[];
+  var step=(sh.services||[]).some(function(s){return (+s.min||30)%30!==0})?15:30;
   var busy=activeOn(barberId,date).map(function(b){var s=toMin(b.time);return [s,s+(b.dur||30)]});
   var floor=anyTime?-1:(date<today()?1e9:(date===today()?nowMin():-1));
   for(var t=o;t+dur<=c;t+=step){
@@ -586,7 +587,7 @@ function tabSettings(m){
      '<label class="field"><span>Bağlanış</span><input class="inp" type="time" step="1800" data-bind="shopDraft.close" value="'+esc(d.close)+'"></label></div>'+
      '<h3 style="margin-top:8px">Xidmətlər</h3><div class="row head"><span>Ad</span><span>Dəqiqə</span><span></span></div>'+
      d.services.map(function(s,i){return '<div class="row"><input class="inp sm" data-bind="shopDraft.services.'+i+'.name" value="'+esc(s.name)+'" aria-label="Xidmətin adı">'+
-       '<select class="inp sm" data-bind="shopDraft.services.'+i+'.min" data-num aria-label="Müddət">'+[30,60,90,120].map(function(v){return '<option'+(+s.min===v?' selected':'')+'>'+v+'</option>'}).join('')+'</select>'+
+       '<select class="inp sm" data-bind="shopDraft.services.'+i+'.min" data-num aria-label="Müddət">'+[15,30,45,60,90,120].map(function(v){return '<option'+(+s.min===v?' selected':'')+'>'+v+'</option>'}).join('')+'</select>'+
        '<button class="btn sm ghost" data-act="svcDel" data-v="'+i+'" aria-label="Xidməti sil">Sil</button></div>'}).join('')+
      '<div class="pay" style="margin-top:12px"><button class="btn sm ghost" data-act="svcAdd">Xidmət əlavə et</button><button class="btn sm" data-act="saveShop">Salonu yadda saxla</button></div></div>';
   h+='<div class="panel-box"><h3>Ustalar</h3>'+S.barbers.slice().sort(function(x,y){return x.name.localeCompare(y.name)}).map(function(b){
@@ -739,7 +740,7 @@ var A={
     if(s.pass.length<4){s.err='Parol ən azı 4 simvol olmalıdır.';return}
     var salt=rid(),id=rid();
     var ok=await put('shop','settings',{name:s.shop.trim(),open:'10:00',close:'21:00',services:[
-      {id:'sac',name:'Saç kəsimi',min:30,price:15},{id:'saqqal',name:'Saqqal düzəltmə',min:30,price:10},{id:'kompleks',name:'Saç və saqqal',min:60,price:22}]});
+      {id:'sac',name:'Saç kəsimi',min:30,price:15},{id:'saqqal',name:'Saqqal düzəltmə',min:15,price:10},{id:'kompleks',name:'Saç və saqqal',min:45,price:22}]});
     if(!ok){s.err='Yaratmaq alınmadı. Bu səhifədə dəyişiklik etmək icazən olmaya bilər.';S.shop=null;return}
     await put('barbers',id,{name:s.name.trim(),owner:true,salt:salt,hash:hashPass(salt,s.pass)});
     ui.meId=id;ls('bb_me',id);ui.view='panel';ui.tab='day';
