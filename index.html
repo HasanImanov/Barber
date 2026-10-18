@@ -98,6 +98,11 @@ h1,h2,h3,p{margin:0}
 .day b{display:block;font-family:var(--display);font-weight:500;font-size:24px;line-height:1.15}
 .day[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .day[aria-pressed="true"] i{color:inherit;opacity:.75}
+.day:disabled{background:transparent;border-style:dashed;color:var(--muted);cursor:not-allowed}
+.day:disabled b{text-decoration:line-through;opacity:.6}
+.wk{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.wk button{border:1.5px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 10px;font-size:14px;font-weight:600;min-height:38px}
+.wk button[aria-pressed="true"]{background:var(--red-soft);border-color:var(--red);color:var(--red)}
 .slots{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(76px,1fr))}
 .slot{border:1.5px solid var(--line);background:var(--surface);border-radius:8px;padding:10px 0;font-weight:600;font-variant-numeric:tabular-nums}
 .slot:disabled{background:transparent;color:var(--muted);text-decoration:line-through;opacity:.55;cursor:not-allowed}
@@ -371,12 +376,22 @@ function slotsFor(barberId,date,dur,anyTime){
   var sh=S.shop,o=toMin(sh.open),c=toMin(sh.close),out=[];
   var step=30;
   var busy=activeOn(barberId,date).map(function(b){var s=toMin(b.time);return [s,s+blk(b.dur)]});
+  if(!anyTime&&isOff(date))return [];
   var floor=anyTime?-1:(date<today()?1e9:(date===today()?nowMin():-1));
   for(var t=o;t+dur<=c;t+=step){
     var clash=busy.some(function(x){return t<x[1]&&t+dur>x[0]});
     out.push({t:fromMin(t),free:!clash&&t>floor});
   }
   return out;
+}
+var WEEK=[1,2,3,4,5,6,0];
+function offDays(){return (S.shop&&S.shop.offDays)||[]}
+function isOff(ds){return offDays().indexOf(parseD(ds).getDay())>=0}
+function nextOpen(ds){for(var i=0;i<14;i++){var d=addDays(ds,i);if(!isOff(d))return d}return ds}
+function hoursLine(){
+  var off=offDays(),base=esc(S.shop.open)+' – '+esc(S.shop.close);
+  if(!off.length)return base+', hər gün';
+  return base+', '+WEEK.filter(function(d){return off.indexOf(d)>=0}).map(function(d){return WD[d].toLowerCase()}).join(', ')+(off.length>1?' istirahət günləri':' istirahət günü');
 }
 function blk(x){return Math.max(30,Math.ceil((+x||30)/30)*30)}
 function svc(id){return (S.shop&&S.shop.services||[]).find(function(s){return s.id===id})||null}
@@ -442,7 +457,7 @@ function stepHead(id,n,title,now,hint){
 }
 function viewBook(){
   var b=ui.book,sh=S.shop,h='';
-  h+='<div class="top"><div class="brand">'+esc(sh.name)+'<small>'+esc(sh.open)+' – '+esc(sh.close)+', hər gün</small></div>'+
+  h+='<div class="top"><div class="brand">'+esc(sh.name)+'<small>'+hoursLine()+'</small></div>'+
      '<button class="btn ghost sm" data-act="nav" data-v="login">Bərbər girişi</button></div>';
   if(b.done){
     var d=b.done;
@@ -464,9 +479,10 @@ function viewBook(){
   }
   var s=svc(b.serviceId);
   if(b.barberId&&s){
+    if(isOff(b.date)){b.date=nextOpen(b.date);b.time=null}
     var days='';
-    for(var i=0;i<14;i++){var ds=addDays(today(),i),dd=parseD(ds);
-      days+='<button class="day" data-act="pickDate" data-v="'+ds+'" aria-pressed="'+(b.date===ds)+'"><i>'+(i===0?'Bu gün':WDS[dd.getDay()])+'</i><b>'+dd.getDate()+'</b><i>'+MONTHS[dd.getMonth()].slice(0,3)+'</i></button>'}
+    for(var i=0;i<14;i++){var ds=addDays(today(),i),dd=parseD(ds),off=isOff(ds);
+      days+='<button class="day" data-act="pickDate" data-v="'+ds+'" aria-pressed="'+(b.date===ds)+'"'+(off?' disabled aria-label="'+esc(niceDate(ds))+', istirahət günü"':'')+'><i>'+(i===0?'Bu gün':WDS[dd.getDay()])+'</i><b>'+dd.getDate()+'</b><i>'+(off?'istirahət':MONTHS[dd.getMonth()].slice(0,3))+'</i></button>'}
     h+=stepHead('st-day',N+2,'Hansı gün?',false)+'<div class="days">'+days+'</div></section>';
     var sl=slotsFor(b.barberId,b.date,blk(s.min));
     h+=stepHead('st-time',N+3,'Saat neçədə?',!b.time,'Boş saatlardan birinə bas')+(sl.some(function(x){return x.free})?
@@ -541,6 +557,7 @@ function tabDay(m){
       '<label class="field"><span>Saat</span><select class="inp" data-bind="add.time">'+(free.length?free.map(function(x){return '<option'+(a.time===x.t?' selected':'')+'>'+x.t+'</option>'}).join(''):'<option value="">Boş vaxt yoxdur</option>')+'</select></label></div>'+
       '<div class="pay"><button class="btn sm" data-act="addSave" '+(free.length?'':'disabled')+'>Cədvələ əlavə et</button><button class="btn sm ghost" data-act="addCancel">Bağla</button></div></div>';
   }
+  if(isOff(ui.day))h+='<p class="note" style="margin-bottom:12px"><b>İstirahət günü.</b> Müştərilər bu günə rezerv edə bilmir, amma sən özün müştəri əlavə edə bilərsən.</p>';
   if(list.length){
     h+='<p class="note" style="margin-bottom:12px">'+list.filter(function(b){return b.status==='booked'||b.status==='done'}).length+' müştəri, bu günün qazancı <b style="color:var(--brass)">'+money(earned)+'</b></p>';
     h+=list.map(apptCard).join('');
@@ -611,6 +628,8 @@ function tabSettings(m){
      '<label class="field"><span>Salonun adı</span><input class="inp" data-bind="shopDraft.name" value="'+esc(d.name)+'"></label>'+
      '<label class="field"><span>Açılış</span><input class="inp" type="time" step="1800" data-bind="shopDraft.open" value="'+esc(d.open)+'"></label>'+
      '<label class="field"><span>Bağlanış</span><input class="inp" type="time" step="1800" data-bind="shopDraft.close" value="'+esc(d.close)+'"></label></div>'+
+     '<span class="field" style="margin-bottom:6px"><span>İstirahət günləri</span></span><div class="wk">'+WEEK.map(function(w){var on=(d.offDays||[]).indexOf(w)>=0;
+       return '<button data-act="offToggle" data-v="'+w+'" aria-pressed="'+on+'">'+WD[w]+'</button>'}).join('')+'</div>'+
      '<h3 style="margin-top:8px">Xidmətlər</h3><div class="row head"><span>Ad</span><span>Dəqiqə</span><span></span></div>'+
      d.services.map(function(s,i){return '<div class="row"><input class="inp sm" data-bind="shopDraft.services.'+i+'.name" value="'+esc(s.name)+'" aria-label="Xidmətin adı">'+
        '<select class="inp sm" data-bind="shopDraft.services.'+i+'.min" data-num aria-label="Müddət">'+[30,60,90,120].map(function(v){return '<option'+(blk(s.min)===v?' selected':'')+'>'+v+'</option>'}).join('')+'</select>'+
@@ -732,12 +751,15 @@ var A={
   },
   svcAdd:function(){ui.shopDraft.services.push({id:rid(),name:'',min:30,price:0})},
   svcDel:function(d){ui.shopDraft.services.splice(+d.v,1)},
+  offToggle:function(d){var a=(ui.shopDraft.offDays||[]).slice(),w=+d.v,i=a.indexOf(w);if(i>=0)a.splice(i,1);else a.push(w);ui.shopDraft.offDays=a},
   saveShop:async function(){
     var d=clone(ui.shopDraft);
     d.name=(d.name||'').trim();d.services=d.services.filter(function(s){return (s.name||'').trim()}).map(function(s){return {id:s.id,name:s.name.trim(),min:blk(s.min),price:+s.price||0}});
     if(!d.name){toast('Salonun adını yaz.');return}
     if(!d.open||!d.close||toMin(d.close)<=toMin(d.open)){toast('Bağlanış saatı açılışdan sonra olmalıdır.');return}
     if(!d.services.length){toast('Ən azı bir xidmət saxla.');return}
+    d.offDays=(d.offDays||[]).filter(function(x){return x>=0&&x<=6});
+    if(d.offDays.length>=7){toast('Həftədə ən azı bir iş günü olmalıdır.');return}
     if(await put('shop','settings',d)){toast('Salon yadda saxlandı.');draftShop()}
   },
   staffAdd:async function(){
