@@ -64,8 +64,8 @@ h1,h2,h3,p{margin:0}
 .note{color:var(--muted);font-size:14px}
 
 /* Müştəri səhifəsi */
-.hero{padding:28px 0 32px}
-.hero h1{font-family:var(--display);font-weight:600;font-size:clamp(44px,9vw,84px);line-height:1;letter-spacing:-.01em;text-wrap:balance}
+.hero{padding:18px 0 22px}
+.hero h1{font-family:var(--display);font-weight:600;font-size:clamp(34px,7vw,64px);line-height:1.02;letter-spacing:-.01em;text-wrap:balance}
 .hero p{margin-top:14px;font-size:18px;color:var(--muted);max-width:34ch}
 .book{display:grid;gap:28px;grid-template-columns:minmax(0,1fr)}
 @media (min-width:880px){.book{grid-template-columns:minmax(0,1fr) 320px;align-items:start}.book .ticket{position:sticky;top:20px}}
@@ -77,9 +77,20 @@ h1,h2,h3,p{margin:0}
 .opt[aria-pressed="true"]{border-color:var(--blue);background:var(--blue-soft);box-shadow:inset 0 0 0 1px var(--blue)}
 .ava{flex:none;width:38px;height:38px;border-radius:9px;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-family:var(--display);font-size:16px}
 .opt b{font-weight:600}
-.svc{display:grid;gap:8px}
-.svc .opt{justify-content:space-between}
-.svc .opt i{font-style:normal;color:var(--muted);font-size:14px;display:block}
+.svc{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.svc .opt{flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:12px;min-height:128px;padding:16px;position:relative;border-width:2px}
+.svc .opt b{font-size:18px;line-height:1.25;display:block}
+.svc .opt i{font-style:normal;color:var(--muted);font-size:14px;display:block;margin-top:2px}
+.ico{width:52px;height:52px;border-radius:14px;background:var(--sunk);color:var(--ink);display:flex;align-items:center;justify-content:center;gap:1px}
+.ico svg{width:28px;height:28px}
+.ico.pair svg{width:23px;height:23px}
+.svc .opt[aria-pressed="true"] .ico{background:var(--blue);color:var(--on-blue)}
+.svc .opt[aria-pressed="true"]::after{content:"";position:absolute;top:12px;right:12px;width:24px;height:24px;border-radius:50%;background:var(--blue) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12.5l4 4 8-9'/%3E%3C/svg%3E") center/16px no-repeat}
+.step.now h2{color:var(--blue)}
+.hint{display:inline-flex;align-items:center;gap:10px;font-weight:600;font-size:15px;color:var(--blue);background:var(--blue-soft);border-radius:999px;padding:7px 14px 7px 12px;margin:-4px 0 14px}
+.hint::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--blue);flex:none;animation:ping 1.6s ease-out infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(14,124,158,.55)}100%{box-shadow:0 0 0 10px rgba(14,124,158,0)}}
+@media (prefers-reduced-motion:reduce){.hint::before{animation:none}}
 .price{font-family:var(--display);font-size:20px;font-weight:500;white-space:nowrap;font-variant-numeric:tabular-nums}
 .days{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;margin:0 -2px}
 .day{flex:none;width:66px;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:8px 0;text-align:center}
@@ -173,7 +184,8 @@ td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
 .staff .inp{width:140px}
 
 #toast{position:fixed;left:50%;bottom:0;transform:translate(-50%,120%);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:10px;font-weight:500;font-size:15px;max-width:calc(100% - 32px);transition:transform .25s;margin-bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:9;text-align:center}
-#toast.on{transform:translate(-50%,0)}
+#toast.on{transform:translate(-50%,0);visibility:visible}
+#toast:not(.on){visibility:hidden;transition:transform .25s,visibility 0s .25s}
 .loading{padding:80px 0;text-align:center;color:var(--muted)}
 </style>
 </head>
@@ -414,6 +426,19 @@ function missing(b){
   if(b.phone.replace(/\D/g,'').length<9)return 'Telefon nömrəni tam yaz.';
   return '';
 }
+var ICON={
+  cut:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M8.5 7.8 20 17.5M8.5 16.2 20 6.5"/></svg>',
+  razor:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 13.5 13.5 4l3 3L7 16.5H4z"/><path d="M14.5 9.5l6 6-2.5 2.5-6-6"/></svg>'
+};
+function svcIcon(name){
+  var n=String(name||'').toLocaleLowerCase('az');
+  var beard=/saqqal|üz|bığ|ülgüc/.test(n),hair=/saç|kəsim|uşaq/.test(n);
+  if(beard&&hair)return '<span class="ico pair">'+ICON.cut+ICON.razor+'</span>';
+  return '<span class="ico">'+(beard?ICON.razor:ICON.cut)+'</span>';
+}
+function stepHead(id,n,title,now,hint){
+  return '<section class="step'+(now?' now':'')+'" id="'+id+'"><h2><span class="n">'+n+'</span>'+title+'</h2>'+(now&&hint?'<p class="hint">'+hint+'</p>':'');
+}
 function viewBook(){
   var b=ui.book,sh=S.shop,h='';
   h+='<div class="top"><div class="brand">'+esc(sh.name)+'<small>'+esc(sh.open)+' – '+esc(sh.close)+', hər gün</small></div>'+
@@ -425,7 +450,7 @@ function viewBook(){
       '<div class="tear"></div><dl>'+(solo()?'':'<dt>Usta</dt><dd>'+esc(barberName(d.barberId))+'</dd>')+'<dt>Xidmət</dt><dd>'+esc(d.serviceName)+'</dd></dl>'+
       '<div class="tear"></div><button class="btn block ghost" data-act="newBook">Yeni rezerv et</button></div>';
   }
-  h+='<div class="hero"><h1>Növbə gözləmə, vaxtını tut</h1><p>'+(solo()?'Xidməti':'Ustanı, xidməti')+' və saatı seç. Yerin səni gözləyəcək.</p></div>';
+  h+='<div class="hero"><h1>Növbə gözləmə, vaxtını tut</h1><p>'+(solo()?'Üç addım: nə etdirəcəyini seç, saatı seç, adını yaz.':'Ustanı, xidməti və saatı seç. Yerin səni gözləyəcək.')+'</p></div>';
   if(!S.barbers.length)return h+'<div class="empty">Hələ usta əlavə edilməyib. Salon sahibi panelə girib ustaları əlavə etməlidir.</div>';
   if(solo()&&!b.barberId)b.barberId=S.barbers[0].id;
   var N=solo()?0:1;
@@ -433,21 +458,21 @@ function viewBook(){
   if(!solo())h+='<section class="step"><h2><span class="n">1</span>Usta</h2><div class="opts">'+S.barbers.slice().sort(function(x,y){return x.name.localeCompare(y.name)}).map(function(x){
     return '<button class="opt" data-act="pickBarber" data-v="'+x.id+'" aria-pressed="'+(b.barberId===x.id)+'"><span class="ava">'+esc(initials(x.name))+'</span><b>'+esc(x.name)+'</b></button>'}).join('')+'</div></section>';
   if(b.barberId){
-    h+='<section class="step"><h2><span class="n">'+(N+1)+'</span>Xidmət</h2><div class="svc">'+(sh.services||[]).map(function(s){
-      return '<button class="opt" data-act="pickService" data-v="'+s.id+'" aria-pressed="'+(b.serviceId===s.id)+'"><span><b>'+esc(s.name)+'</b><i>'+s.min+' dəqiqə</i></span></button>'}).join('')+'</div></section>';
+    h+=stepHead('st-svc',N+1,'Hansı xidmətdən istifadə edəcəksən?',!b.serviceId,'Buradan başla: birinə bas')+'<div class="svc">'+(sh.services||[]).map(function(s){
+      return '<button class="opt" data-act="pickService" data-v="'+s.id+'" aria-pressed="'+(b.serviceId===s.id)+'">'+svcIcon(s.name)+'<span><b>'+esc(s.name)+'</b><i>'+s.min+' dəqiqə</i></span></button>'}).join('')+'</div></section>';
   }
   var s=svc(b.serviceId);
   if(b.barberId&&s){
     var days='';
     for(var i=0;i<14;i++){var ds=addDays(today(),i),dd=parseD(ds);
       days+='<button class="day" data-act="pickDate" data-v="'+ds+'" aria-pressed="'+(b.date===ds)+'"><i>'+(i===0?'Bu gün':WDS[dd.getDay()])+'</i><b>'+dd.getDate()+'</b><i>'+MONTHS[dd.getMonth()].slice(0,3)+'</i></button>'}
-    h+='<section class="step"><h2><span class="n">'+(N+2)+'</span>Gün</h2><div class="days">'+days+'</div></section>';
+    h+=stepHead('st-day',N+2,'Hansı gün?',false)+'<div class="days">'+days+'</div></section>';
     var sl=slotsFor(b.barberId,b.date,s.min);
-    h+='<section class="step"><h2><span class="n">'+(N+3)+'</span>Saat</h2>'+(sl.some(function(x){return x.free})?
+    h+=stepHead('st-time',N+3,'Saat neçədə?',!b.time,'Boş saatlardan birinə bas')+(sl.some(function(x){return x.free})?
       '<div class="slots">'+sl.map(function(x){return '<button class="slot" data-act="pickTime" data-v="'+x.t+'" '+(x.free?'':'disabled')+' aria-pressed="'+(b.time===x.t)+'">'+x.t+'</button>'}).join('')+'</div>':
       '<div class="empty">Bu günə boş vaxt qalmayıb. Başqa gün seç.</div>')+'</section>';
     if(b.time){
-      h+='<section class="step"><h2><span class="n">'+(N+4)+'</span>Əlaqə</h2><div class="two">'+
+      h+=stepHead('st-contact',N+4,'Adın və telefonun',!!missing(b),'Yaz, sonra “Rezerv et” düyməsinə bas')+'<div class="two">'+
       '<label class="field"><span>Adın</span><input class="inp" data-bind="book.name" data-re value="'+esc(b.name)+'" autocomplete="name"></label>'+
       '<label class="field"><span>Telefon</span><input class="inp" type="tel" inputmode="tel" data-bind="book.phone" data-re value="'+esc(b.phone)+'" placeholder="050 123 45 67" autocomplete="tel"></label></div></section>';
     }
@@ -617,6 +642,9 @@ function render(){
   try{pos=a.selectionStart}catch(e){}
   app.innerHTML=ui.view==='setup'?viewSetup():ui.view==='login'?viewLogin():ui.view==='panel'?viewPanel():viewBook();
   if(S.shop)document.title=S.shop.name+' – rezerv';
+  if(ui.scrollTo){var tgt=document.getElementById(ui.scrollTo);ui.scrollTo=null;
+    if(tgt){var calm=false;try{calm=matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){}
+      setTimeout(function(){try{tgt.scrollIntoView({behavior:calm?'auto':'smooth',block:'start'})}catch(e){}},30)}}
   if(key){var el=app.querySelector('[data-bind="'+key+'"]');if(el){el.focus();try{if(pos!=null)el.setSelectionRange(pos,pos)}catch(e){}}}
 }
 
@@ -626,9 +654,9 @@ function draftShop(){var m=me();ui.shopDraft=clone(S.shop);ui.staffNew={name:'',
 var A={
   nav:function(d){ui.view=d.v;ui.login={barberId:null,pass:'',err:''}},
   pickBarber:function(d){ui.book.barberId=d.v;ui.book.time=null},
-  pickService:function(d){ui.book.serviceId=d.v;ui.book.time=null},
+  pickService:function(d){ui.book.serviceId=d.v;ui.book.time=null;ui.scrollTo='st-day'},
   pickDate:function(d){ui.book.date=d.v;ui.book.time=null},
-  pickTime:function(d){ui.book.time=d.v},
+  pickTime:function(d){var first=!ui.book.time;ui.book.time=d.v;if(first)ui.scrollTo='st-contact'},
   newBook:function(){ui.book={barberId:null,serviceId:null,date:today(),time:null,name:'',phone:'',done:null}},
   confirmBook:async function(){
     var b=ui.book,s=svc(b.serviceId);if(missing(b)||!s)return;
